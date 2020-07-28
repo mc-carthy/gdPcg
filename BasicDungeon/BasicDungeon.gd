@@ -11,6 +11,12 @@ func _ready() -> void:
 	_setup_camera()
 	_generate()
 
+func _process(delta: float) -> void:
+	if Input.is_action_just_pressed('ui_accept'):
+		_generate()
+	if Input.is_action_just_pressed('ui_cancel'):
+		get_tree().quit()
+
 func _setup_camera() -> void:
 	camera.position = level.map_to_world(level_size / 2)
 	
