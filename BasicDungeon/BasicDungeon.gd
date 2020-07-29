@@ -1,5 +1,7 @@
 extends Node2D
 
+const FACTOR: float = 0.125
+
 export var level_size: Vector2 = Vector2(100, 80)
 export var rooms_size: Vector2 = Vector2(10, 14)
 export var rooms_max: int = 15
@@ -40,7 +42,7 @@ func _generate_data() -> Array:
 		if _intersects(room, rooms):
 			continue
 		
-		_add_room(data, rooms, room)
+		_add_room(rng, data, rooms, room)
 		if rooms.size() > 1:
 			var room_previous: Rect2 = rooms[-2]
 			_add_connection(rng, data, room_previous, room)
@@ -54,11 +56,40 @@ func _get_random_room(rng: RandomNumberGenerator) -> Rect2:
 	var y: int = rng.randi_range(0, level_size.y - height - 1)
 	return Rect2(x, y, width, height)
 
-func _add_room(data: Dictionary, rooms: Array, room: Rect2) -> void:
+func _add_room(rng: RandomNumberGenerator, data: Dictionary, rooms: Array, room: Rect2) -> void:
 	rooms.push_back(room)
-	for x in range(room.position.x, room.end.x):
-		for y in range(room.position.y, room.end.y):
-			data[Vector2(x, y)] = null
+	if rng.randi_range(0, 1) == 0:
+		for x in range(room.position.x, room.end.x):
+			for y in range(room.position.y, room.end.y):
+				data[Vector2(x, y)] = null
+	else:
+		var unit: Vector2 = FACTOR * rooms_size
+		var order := [
+			room.grow_individual(-unit.x, 0, -unit.x, unit.y - room.size.y),
+			room.grow_individual(unit.x - room.size.x, -unit.y, 0, -unit.y),
+			room.grow_individual(-unit.x, unit.y - room.size.y, -unit.x, 0),
+			room.grow_individual(0, -unit.y, unit.x - room.size.x, -unit.y)
+		]
+		var poly := []
+		for index in range(order.size()):
+			var rect: Rect2 = order[index]
+			var is_even := index % 2 == 0
+			var poly_partial := []
+			for r in range(rng.randi_range(1, 2)):
+				poly_partial.push_back(Vector2(
+					rng.randf_range(rect.position.x, rect.end.x),
+					rng.randf_range(rect.position.y, rect.end.y)
+				))
+			poly_partial.sort_custom(self, "_lessv_x" if is_even else "_lessv_y")
+			if index > 1:
+				poly_partial.invert()
+			poly += poly_partial
+		
+		for x in range(room.position.x, room.end.x):
+			for y in range(room.position.y, room.end.y):
+				var point := Vector2(x, y)
+				if Geometry.is_point_in_polygon(point, poly):
+					data[point] = null
 
 func _intersects(room: Rect2, rooms: Array) -> bool:
 	var intersecting: bool = false
@@ -85,3 +116,9 @@ func _add_corridor(data: Dictionary, start: int, end: int, constant: int, axis: 
 			Vector2.AXIS_X: point = Vector2(t, constant)
 			Vector2.AXIS_Y: point = Vector2(constant, t)
 		data[point] = null
+
+func _lessv_x(v1: Vector2, v2: Vector2) -> bool:
+	return v1.x < v2.x
+
+func _lessv_y(v1: Vector2, v2: Vector2) -> bool:
+	return v1.y < v2.y
