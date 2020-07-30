@@ -8,9 +8,32 @@
 
 config_version=4
 
-_global_script_classes=[  ]
+_global_script_classes=[ {
+"base": "Reference",
+"class": "Generator",
+"language": "GDScript",
+"path": "res://Generator.gd"
+}, {
+"base": "Reference",
+"class": "Room",
+"language": "GDScript",
+"path": "res://Common/Scripts/Room.gd"
+}, {
+"base": "Room",
+"class": "RoomOrganic",
+"language": "GDScript",
+"path": "res://Common/Scripts/RoomOrganic.gd"
+}, {
+"base": "Reference",
+"class": "Utils",
+"language": "GDScript",
+"path": "res://Common/Scripts/Utils.gd"
+} ]
 _global_script_class_icons={
-
+"Generator": "",
+"Room": "",
+"RoomOrganic": "",
+"Utils": ""
 }
 
 [application]
