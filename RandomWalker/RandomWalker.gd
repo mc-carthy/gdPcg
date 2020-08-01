@@ -141,9 +141,16 @@ func _place_side_rooms() -> void:
 	level.update_bitmask_region()
 
 func _copy_room(offset: Vector2, type: int) -> void:
+	var world_offset := _grid_to_world(offset)
 	var map_offset := _grid_to_map(offset)
-	var data: Array = _rooms.get_room_data(type)
-	for d in data:
+	var data: Dictionary = _rooms.get_room_data(type)
+	
+	for object in data.objects:
+		var new_object: Node2D = object.duplicate()
+		new_object.position += world_offset
+		level.add_child(new_object)
+	
+	for d in data.tilemap:
 		level.set_cellv(map_offset + d.offset, d.cell)
 
 func _grid_to_map(vector: Vector2) -> Vector2:
