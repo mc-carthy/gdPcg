@@ -118,12 +118,12 @@ func _update_down_counter() -> void:
 func _place_walls(type: int = 0) -> void:
 	var cell_grid_size := _grid_to_map(grid_size)
 	
-	for x in [-1, cell_grid_size.x]:
-		for y in range(-1, cell_grid_size.y + 1):
+	for x in [-2, -1, cell_grid_size.x, cell_grid_size.x + 1]:
+		for y in range(-2, cell_grid_size.y + 2):
 			level.set_cell(x, y, type)
 	
-	for x in range(cell_grid_size.x + 1):
-		for y in [-1, cell_grid_size.y]:
+	for x in range(-1, cell_grid_size.x + 2):
+		for y in [-2, -1, cell_grid_size.y, cell_grid_size.y + 1]:
 			level.set_cell(x, y, type)
 
 func _place_path_rooms() -> void:
@@ -138,6 +138,7 @@ func _place_side_rooms() -> void:
 	for key in _state.empty_cells:
 		var type := _rng.randi_range(0, rooms_max_index)
 		_copy_room(key, type)
+	level.update_bitmask_region()
 
 func _copy_room(offset: Vector2, type: int) -> void:
 	var map_offset := _grid_to_map(offset)
