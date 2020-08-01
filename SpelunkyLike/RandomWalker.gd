@@ -45,9 +45,6 @@ func _generate_level() -> void:
 	_place_path_rooms()
 	_place_side_rooms()
 
-func _grid_to_world(grid_size) -> Vector2:
-	return Vector2()
-
 func _reset() -> void:
 	_state = {
 		"random_index": -1,
@@ -118,11 +115,38 @@ func _update_down_counter() -> void:
 			else 0
 		)
 
-func _place_walls() -> void:
-	pass
+func _place_walls(type: int = 0) -> void:
+	var cell_grid_size := _grid_to_map(grid_size)
+	
+	for x in [-1, cell_grid_size.x]:
+		for y in range(-1, cell_grid_size.y + 1):
+			level.set_cell(x, y, type)
+	
+	for x in range(cell_grid_size.x + 1):
+		for y in [-1, cell_grid_size.y]:
+			level.set_cell(x, y, type)
 
 func _place_path_rooms() -> void:
-	pass
+	for path in _state.path:
+		yield(timer, "timeout")
+		_copy_room(path.offset, path.type)
+	emit_signal("path_completed")
 
 func _place_side_rooms() -> void:
-	pass
+	yield(self, "path_completed")
+	var rooms_max_index: int = _rooms.Type.size() - 1
+	for key in _state.empty_cells:
+		var type := _rng.randi_range(0, rooms_max_index)
+		_copy_room(key, type)
+
+func _copy_room(offset: Vector2, type: int) -> void:
+	var map_offset := _grid_to_map(offset)
+	var data: Array = _rooms.get_room_data(type)
+	for d in data:
+		level.set_cellv(map_offset + d.offset, d.cell)
+
+func _grid_to_map(vector: Vector2) -> Vector2:
+	return _rooms.room_size * vector
+
+func _grid_to_world(vector: Vector2) -> Vector2:
+	return _rooms.cell_size * _rooms.room_size * vector
