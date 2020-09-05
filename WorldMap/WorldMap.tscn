@@ -1,0 +1,84 @@
+[gd_scene load_steps=11 format=2]
+
+[sub_resource type="Shader" id=1]
+code = "shader_type canvas_item;
+
+
+// A step-wise gradient-map to assign flat colors to the water/land masses and biomes
+uniform sampler2D color_map : hint_black;
+// An array of positions of the `color_map`'s color stops
+// We need them to determine water and land masses
+uniform sampler2D color_map_offsets : hint_black;
+// The following three variables are noise values for height, heat, and moisture
+uniform sampler2D height_map : hint_black;
+uniform sampler2D heat_map : hint_black;
+uniform sampler2D moisture_map : hint_black;
+// GDScript generated texture for rivers.
+uniform sampler2D rivers_map : hint_black;
+
+// This is the value of `color_map.gradient.offsets.size()`. We need it to get values at the given indices.
+uniform int color_map_offsets_n = 0;
+
+// The next two variables store the minimum and maximum values of noise generators
+// that we will respectively use to calculate the heat and moisture of our world.
+// We use those ranges to normalize our noise values.
+uniform vec2 heat_map_minmax = vec2(0.0, 1.0);
+uniform vec2 moisture_map_minmax = vec2(0.0, 1.0);"
+custom_defines = ""
+
+[sub_resource type="Gradient" id=3]
+offsets = PoolRealArray( 0.00355872, 0.256228, 0.505338, 0.550415, 0.603796, 0.651246, 0.688019, 0.723606, 0.759193, 0.793594, 0.827995, 0.852906, 1 )
+colors = PoolColorArray( 0.266667, 0.247059, 0.415686, 1, 0.294118, 0.356863, 0.666667, 1, 0.341176, 1, 0.894118, 1, 0.956863, 0.639216, 0.443137, 1, 0.196078, 0.243137, 0.309804, 1, 0.811765, 0.996078, 0.486275, 1, 0.909804, 0.407843, 0.345098, 1, 0.262745, 0.262745, 0.301961, 1, 0.239216, 0.427451, 0.439216, 1, 0.235294, 0.635294, 0.439216, 1, 0.266667, 0.145098, 0.270588, 1, 1, 1, 0.917647, 1, 1, 1, 1, 1 )
+
+[sub_resource type="GradientTexture" id=4]
+gradient = SubResource( 3 )
+
+[sub_resource type="OpenSimplexNoise" id=5]
+octaves = 2
+period = 55.0
+persistence = 0.8
+lacunarity = 2.8
+
+[sub_resource type="NoiseTexture" id=6]
+width = 256
+height = 256
+noise = SubResource( 5 )
+
+[sub_resource type="OpenSimplexNoise" id=7]
+period = 33.0
+persistence = 0.49
+lacunarity = 2.6
+
+[sub_resource type="NoiseTexture" id=8]
+noise = SubResource( 7 )
+
+[sub_resource type="OpenSimplexNoise" id=9]
+period = 34.0
+persistence = 0.8
+
+[sub_resource type="NoiseTexture" id=10]
+width = 256
+height = 256
+noise = SubResource( 9 )
+
+[sub_resource type="ShaderMaterial" id=2]
+shader = SubResource( 1 )
+shader_param/color_map_offsets_n = 0
+shader_param/heat_map_minmax = Vector2( 0, 1 )
+shader_param/moisture_map_minmax = Vector2( 0, 1 )
+shader_param/color_map = SubResource( 4 )
+shader_param/height_map = SubResource( 8 )
+shader_param/heat_map = SubResource( 6 )
+shader_param/moisture_map = SubResource( 10 )
+
+[node name="WorldMap" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Viewer" type="ColorRect" parent="."]
+material = SubResource( 2 )
+anchor_right = 1.0
+anchor_bottom = 1.0

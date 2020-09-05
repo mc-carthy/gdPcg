@@ -1,0 +1,33 @@
+[gd_scene load_steps=6 format=2]
+
+[ext_resource path="res://WorldMap/discrete-color-map.png" type="Texture" id=1]
+
+[sub_resource type="Shader" id=1]
+code = "shader_type canvas_item;
+uniform sampler2D color_map : hint_black;
+
+void fragment() {
+    float noise = texture(TEXTURE, UV).r;
+    COLOR = texture(color_map, vec2(noise, 0.0));
+}"
+custom_defines = ""
+
+[sub_resource type="ShaderMaterial" id=2]
+shader = SubResource( 1 )
+shader_param/color_map = ExtResource( 1 )
+
+[sub_resource type="OpenSimplexNoise" id=3]
+
+[sub_resource type="NoiseTexture" id=4]
+width = 1024
+height = 600
+noise = SubResource( 3 )
+
+[node name="Test" type="TextureRect"]
+material = SubResource( 2 )
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = SubResource( 4 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
